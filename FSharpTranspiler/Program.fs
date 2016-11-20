@@ -1,8 +1,6 @@
-﻿// Learn more about F# at http://fsharp.org
-// See the 'F# Tutorial' project for more help.
+﻿open System;
 
-open System;
-
+//Discriminated union
 type Node<'a> =
     |Leaf 
     |Node of Node<string> * string * Node<string>
@@ -22,10 +20,24 @@ namespace Transpiled
 }
 "
 
-let buildCode nodes = 
-    ""
+let extractStringParams (node:Node<string>,node2:Node<string>) = 
+    match node,node2 with
+    | Node(Leaf,a,Leaf),Node(Leaf,b,Leaf) -> a + " " + b
+    | Leaf, Leaf -> ""
+    | Leaf, Node(Leaf,a,Leaf) -> a
+    | Node(Leaf,a,Leaf), Leaf -> a
+    | _ -> ""
 
-let generateCodeFile nodes =
+
+let transpileNode (node:Node<string>) =
+    match node with
+    | Node (a,b,c) when b = "Display" ->  @"Console.WriteLine(" + extractStringParams (a,c) + ");"
+    | _ -> ""
+
+let buildCode (nodes:Node<string> list) = 
+    List.fold (fun acc node -> acc + transpileNode node ) "" nodes
+
+let generateCodeFile (nodes:Node<string> list) =
     String.Format(generateBoilerPlate, buildCode nodes)
 
 let readLines (filePath:string) =
